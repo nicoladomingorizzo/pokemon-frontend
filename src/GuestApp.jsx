@@ -14,21 +14,15 @@ const GuestApp = () => {
     const { name: urlSlug } = useParams();
     const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
-    // --- GENERATORE SLUG UNICO ---
     const getSlug = useCallback((card) => {
         if (!card) return '';
         const name = card.name.toLowerCase().replace(/[^\w]/g, '-');
         return `${card.id}-${name}`;
     }, []);
 
-    // --- LOGICA DI FILTRO MODIFICATA: RICERCA PER INIZIALE ---
     const filteredCards = useMemo(() => {
         const query = search.toLowerCase().trim();
-        return cards.filter(c => {
-            if (!query) return true;
-            // Usiamo startsWith invece di includes per cercare solo le iniziali
-            return c.name.toLowerCase().startsWith(query);
-        });
+        return cards.filter(c => query ? c.name.toLowerCase().startsWith(query) : true);
     }, [cards, search]);
 
     const currentIndex = useMemo(() => {
@@ -44,36 +38,28 @@ const GuestApp = () => {
         }, 300);
     }, [navigate]);
 
-    // --- NAVIGAZIONE TRA I POKÉMON (CON BLOCCO) ---
     const goToNext = useCallback((e) => {
         if (e) e.stopPropagation();
         if (currentIndex < filteredCards.length - 1) {
-            const nextCard = filteredCards[currentIndex + 1];
-            navigate(`/gallery/${getSlug(nextCard)}`);
+            navigate(`/gallery/${getSlug(filteredCards[currentIndex + 1])}`);
         }
     }, [currentIndex, filteredCards, navigate, getSlug]);
 
     const goToPrev = useCallback((e) => {
         if (e) e.stopPropagation();
         if (currentIndex > 0) {
-            const prevCard = filteredCards[currentIndex - 1];
-            navigate(`/gallery/${getSlug(prevCard)}`);
+            navigate(`/gallery/${getSlug(filteredCards[currentIndex - 1])}`);
         }
     }, [currentIndex, filteredCards, navigate, getSlug]);
 
-    // --- NAVIGAZIONE IMMAGINI INTERNE (PER LA STESSA CARTA) ---
     const nextImg = (e) => {
         e.stopPropagation();
-        if (selectedCard?.images) {
-            setCurrentImgIndex(prev => (prev + 1) % selectedCard.images.length);
-        }
+        if (selectedCard?.images) setCurrentImgIndex(prev => (prev + 1) % selectedCard.images.length);
     };
 
     const prevImg = (e) => {
         e.stopPropagation();
-        if (selectedCard?.images) {
-            setCurrentImgIndex(prev => (prev === 0 ? selectedCard.images.length - 1 : prev - 1));
-        }
+        if (selectedCard?.images) setCurrentImgIndex(prev => (prev === 0 ? selectedCard.images.length - 1 : prev - 1));
     };
 
     const getTypeStyle = (type) => {
@@ -93,13 +79,8 @@ const GuestApp = () => {
     useEffect(() => {
         if (urlSlug && cards.length > 0) {
             const card = cards.find(c => getSlug(c) === urlSlug);
-            if (card) {
-                setSelectedCard(card);
-                setCurrentImgIndex(0);
-            }
-        } else {
-            setSelectedCard(null);
-        }
+            if (card) { setSelectedCard(card); setCurrentImgIndex(0); }
+        } else { setSelectedCard(null); }
     }, [urlSlug, cards, getSlug]);
 
     useEffect(() => {
@@ -120,22 +101,18 @@ const GuestApp = () => {
             <div className="container py-5">
                 <header className="text-center mb-5">
                     <h1 className="fw-bold text-warning display-4" style={{ textShadow: '2px 2px #000' }}>POKÉMON GALLERY</h1>
-                    <input
-                        type="text" className="form-control bg-dark text-white border-warning rounded-pill w-50 mx-auto mt-4 shadow"
-                        placeholder="Cerca per iniziale..." value={search} onChange={(e) => setSearch(e.target.value)}
-                    />
+                    <input type="text" className="form-control bg-dark text-white border-warning rounded-pill w-50 mx-auto mt-4 shadow"
+                        placeholder="Cerca per iniziale..." value={search} onChange={(e) => setSearch(e.target.value)} />
                 </header>
 
                 <div className="row g-4">
                     {filteredCards.map(card => (
                         <div key={card.id} className="col-md-4">
-                            <div className="p-4 h-100 shadow"
-                                onClick={() => navigate(`/gallery/${getSlug(card)}`)}
+                            <div className="p-4 h-100 shadow text-start" onClick={() => navigate(`/gallery/${getSlug(card)}`)}
                                 style={{ background: 'linear-gradient(145deg, #ffd700, #e0c020)', borderRadius: '18px', border: '4px solid #333', cursor: 'pointer' }}>
                                 <div className="p-3 rounded mb-2" style={{ backgroundColor: '#1a1a1a' }}>
                                     <div className="d-flex justify-content-between text-white mb-2 px-1">
                                         <h5 className="fw-bold mb-0 text-truncate">{card.name}</h5>
-                                        <span className="text-danger fw-bold">{card.hp ? `HP ${card.hp}` : ''}</span>
                                     </div>
                                     <div style={{ height: '220px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                         <img src={`${baseUrl}/storage/${card.images[0]?.path}`} alt={card.name} style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />
@@ -145,15 +122,10 @@ const GuestApp = () => {
                                     <span className="badge flex-grow-1 bg-dark text-white-50 border border-secondary">{card.rarity || 'Comune'}</span>
                                     <span className="badge rounded-pill px-3 shadow-sm" style={getTypeStyle(card.type)}>{card.type}</span>
                                 </div>
-                                <div className="mt-3 fw-bold text-dark fs-4 bg-white bg-opacity-25 rounded text-center py-1">
-                                    € {card.price}
-                                </div>
+                                <div className="mt-3 fw-bold text-dark fs-4 bg-white bg-opacity-25 rounded text-center py-1">€ {card.price}</div>
                             </div>
                         </div>
                     ))}
-                    {filteredCards.length === 0 && (
-                        <div className="col-12 text-center py-5 text-muted">Nessun Pokémon inizia con "{search}"</div>
-                    )}
                 </div>
 
                 {selectedCard && (
@@ -162,48 +134,33 @@ const GuestApp = () => {
                             <div className="modal-content bg-dark text-white border-warning" style={{ borderRadius: '25px', border: '2px solid' }}>
                                 <div className="row g-0">
                                     <div className="col-md-6 bg-black d-flex align-items-center justify-content-center position-relative p-4 rounded-start" style={{ minHeight: '450px' }}>
-                                        <button className="btn text-warning position-absolute start-0 fs-1 z-3 px-3 h-100"
-                                            onClick={goToPrev} style={{ visibility: currentIndex > 0 ? 'visible' : 'hidden', backgroundColor: 'rgba(0,0,0,0.1)' }}>‹</button>
-                                        <button className="btn text-warning position-absolute end-0 fs-1 z-3 px-3 h-100"
-                                            onClick={goToNext} style={{ visibility: currentIndex < filteredCards.length - 1 ? 'visible' : 'hidden', backgroundColor: 'rgba(0,0,0,0.1)' }}>›</button>
-
+                                        <button className="btn text-warning position-absolute start-0 fs-1 z-3 px-3 h-100" onClick={goToPrev} style={{ visibility: currentIndex > 0 ? 'visible' : 'hidden' }}>‹</button>
+                                        <button className="btn text-warning position-absolute end-0 fs-1 z-3 px-3 h-100" onClick={goToNext} style={{ visibility: currentIndex < filteredCards.length - 1 ? 'visible' : 'hidden' }}>›</button>
                                         {selectedCard.images.length > 1 && (
-                                            <div className="position-absolute d-flex justify-content-between w-75 z-3" style={{ bottom: '15%' }}>
-                                                <button className="btn btn-sm btn-light opacity-75 rounded-circle shadow" onClick={prevImg}>←</button>
-                                                <button className="btn btn-sm btn-light opacity-75 rounded-circle shadow" onClick={nextImg}>→</button>
-                                            </div>
-                                        )}
-
-                                        {selectedCard.images.length > 1 && (
-                                            <div className="position-absolute bottom-0 mb-3 d-flex gap-2">
-                                                {selectedCard.images.map((_, i) => (
-                                                    <div key={i} onClick={(e) => { e.stopPropagation(); setCurrentImgIndex(i); }}
-                                                        style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: currentImgIndex === i ? '#ffd700' : '#555', cursor: 'pointer', border: '1px solid #000' }} />
-                                                ))}
-                                            </div>
+                                            <>
+                                                <div className="position-absolute d-flex justify-content-between w-75 z-3" style={{ bottom: '15%' }}>
+                                                    <button className="btn btn-sm btn-light opacity-75 rounded-circle shadow" onClick={prevImg}>←</button>
+                                                    <button className="btn btn-sm btn-light opacity-75 rounded-circle shadow" onClick={nextImg}>→</button>
+                                                </div>
+                                                <div className="position-absolute bottom-0 mb-3 d-flex gap-2">
+                                                    {selectedCard.images.map((_, i) => (
+                                                        <div key={i} onClick={(e) => { e.stopPropagation(); setCurrentImgIndex(i); }}
+                                                            style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: currentImgIndex === i ? '#ffd700' : '#555', cursor: 'pointer' }} />
+                                                    ))}
+                                                </div>
+                                            </>
                                         )}
                                         <img src={`${baseUrl}/storage/${selectedCard.images[currentImgIndex]?.path}`} className="img-fluid" style={{ maxHeight: '380px', filter: 'drop-shadow(0 0 12px gold)' }} alt="" />
                                     </div>
-
                                     <div className="col-md-6 p-4 p-md-5 position-relative text-start">
-                                        <h2 className="text-warning fw-bold mb-1 text-start">{selectedCard.name}</h2>
-                                        {selectedCard.hp && <h5 className="text-danger fw-bold mb-3 text-start">HP {selectedCard.hp}</h5>}
-
-                                        <div className="mb-4 d-flex gap-2">
-                                            <span className="badge bg-secondary">{selectedCard.rarity}</span>
-                                            <span className="badge rounded-pill" style={getTypeStyle(selectedCard.type)}>{selectedCard.type}</span>
+                                        <h2 className="text-warning fw-bold mb-1">{selectedCard.name}</h2>
+                                        {selectedCard.hp && <h5 className="text-danger fw-bold mb-3">HP {selectedCard.hp}</h5>}
+                                        <div className="mb-4 d-flex gap-2"><span className="badge bg-secondary">{selectedCard.rarity}</span><span className="badge rounded-pill" style={getTypeStyle(selectedCard.type)}>{selectedCard.type}</span></div>
+                                        <div className="mb-3"><p className="mb-1 text-secondary small text-uppercase">Espansione</p><p className="fw-bold text-white">{selectedCard.expansion?.name || 'Set Base'}</p></div>
+                                        <div className="p-3 bg-white bg-opacity-10 rounded my-4 shadow-sm" style={{ fontSize: '0.9rem', borderLeft: '4px solid #ffd700', maxHeight: '120px', overflowY: 'auto' }}>
+                                            <em>"{selectedCard.description || 'Nessuna descrizione disponibile.'}"</em>
                                         </div>
-
-                                        <div className="mb-3 text-start">
-                                            <p className="mb-1 text-secondary small text-uppercase">Espansione</p>
-                                            <p className="fw-bold text-white">{selectedCard.expansion?.name || 'Set Base'}</p>
-                                        </div>
-
-                                        <div className="p-3 bg-white bg-opacity-10 rounded my-4 shadow-sm text-start" style={{ fontSize: '0.9rem', borderLeft: '4px solid #ffd700', maxHeight: '120px', overflowY: 'auto' }}>
-                                            <em>"{selectedCard.description || 'Questa carta non ha una descrizione Pokédex disponibile.'}"</em>
-                                        </div>
-
-                                        <div className="h2 text-success fw-bold text-start">€ {selectedCard.price}</div>
+                                        <div className="h2 text-success fw-bold">€ {selectedCard.price}</div>
                                         <button className="btn-close btn-close-white position-absolute top-0 end-0 m-4 shadow-none" onClick={handleClose}></button>
                                     </div>
                                 </div>
