@@ -21,8 +21,14 @@ const GuestApp = () => {
         return `${card.id}-${name}`;
     }, []);
 
+    // --- LOGICA DI FILTRO MODIFICATA: RICERCA PER INIZIALE ---
     const filteredCards = useMemo(() => {
-        return cards.filter(c => c.name.toLowerCase().includes(search.toLowerCase().trim()));
+        const query = search.toLowerCase().trim();
+        return cards.filter(c => {
+            if (!query) return true;
+            // Usiamo startsWith invece di includes per cercare solo le iniziali
+            return c.name.toLowerCase().startsWith(query);
+        });
     }, [cards, search]);
 
     const currentIndex = useMemo(() => {
@@ -116,7 +122,7 @@ const GuestApp = () => {
                     <h1 className="fw-bold text-warning display-4" style={{ textShadow: '2px 2px #000' }}>POKÉMON GALLERY</h1>
                     <input
                         type="text" className="form-control bg-dark text-white border-warning rounded-pill w-50 mx-auto mt-4 shadow"
-                        placeholder="Cerca un Pokémon..." value={search} onChange={(e) => setSearch(e.target.value)}
+                        placeholder="Cerca per iniziale..." value={search} onChange={(e) => setSearch(e.target.value)}
                     />
                 </header>
 
@@ -145,6 +151,9 @@ const GuestApp = () => {
                             </div>
                         </div>
                     ))}
+                    {filteredCards.length === 0 && (
+                        <div className="col-12 text-center py-5 text-muted">Nessun Pokémon inizia con "{search}"</div>
+                    )}
                 </div>
 
                 {selectedCard && (
@@ -152,16 +161,12 @@ const GuestApp = () => {
                         <div className="modal-dialog modal-lg modal-dialog-centered px-2" onClick={e => e.stopPropagation()}>
                             <div className="modal-content bg-dark text-white border-warning" style={{ borderRadius: '25px', border: '2px solid' }}>
                                 <div className="row g-0">
-                                    {/* COLONNA IMMAGINE CON DOPPIA NAVIGAZIONE */}
                                     <div className="col-md-6 bg-black d-flex align-items-center justify-content-center position-relative p-4 rounded-start" style={{ minHeight: '450px' }}>
-
-                                        {/* Frecce Grandi Laterali: Navigazione Pokémon */}
                                         <button className="btn text-warning position-absolute start-0 fs-1 z-3 px-3 h-100"
                                             onClick={goToPrev} style={{ visibility: currentIndex > 0 ? 'visible' : 'hidden', backgroundColor: 'rgba(0,0,0,0.1)' }}>‹</button>
                                         <button className="btn text-warning position-absolute end-0 fs-1 z-3 px-3 h-100"
                                             onClick={goToNext} style={{ visibility: currentIndex < filteredCards.length - 1 ? 'visible' : 'hidden', backgroundColor: 'rgba(0,0,0,0.1)' }}>›</button>
 
-                                        {/* Frecce Piccole: Navigazione Foto Interne alla Carta */}
                                         {selectedCard.images.length > 1 && (
                                             <div className="position-absolute d-flex justify-content-between w-75 z-3" style={{ bottom: '15%' }}>
                                                 <button className="btn btn-sm btn-light opacity-75 rounded-circle shadow" onClick={prevImg}>←</button>
@@ -169,7 +174,6 @@ const GuestApp = () => {
                                             </div>
                                         )}
 
-                                        {/* Pallini (Dots) per le foto */}
                                         {selectedCard.images.length > 1 && (
                                             <div className="position-absolute bottom-0 mb-3 d-flex gap-2">
                                                 {selectedCard.images.map((_, i) => (
@@ -178,31 +182,28 @@ const GuestApp = () => {
                                                 ))}
                                             </div>
                                         )}
-
                                         <img src={`${baseUrl}/storage/${selectedCard.images[currentImgIndex]?.path}`} className="img-fluid" style={{ maxHeight: '380px', filter: 'drop-shadow(0 0 12px gold)' }} alt="" />
                                     </div>
 
-                                    {/* COLONNA DETTAGLI */}
-                                    <div className="col-md-6 p-4 p-md-5 position-relative">
-                                        <h2 className="text-warning fw-bold mb-1">{selectedCard.name}</h2>
-                                        {selectedCard.hp && <h5 className="text-danger fw-bold mb-3">HP {selectedCard.hp}</h5>}
+                                    <div className="col-md-6 p-4 p-md-5 position-relative text-start">
+                                        <h2 className="text-warning fw-bold mb-1 text-start">{selectedCard.name}</h2>
+                                        {selectedCard.hp && <h5 className="text-danger fw-bold mb-3 text-start">HP {selectedCard.hp}</h5>}
 
                                         <div className="mb-4 d-flex gap-2">
                                             <span className="badge bg-secondary">{selectedCard.rarity}</span>
                                             <span className="badge rounded-pill" style={getTypeStyle(selectedCard.type)}>{selectedCard.type}</span>
                                         </div>
 
-                                        <div className="mb-3">
+                                        <div className="mb-3 text-start">
                                             <p className="mb-1 text-secondary small text-uppercase">Espansione</p>
                                             <p className="fw-bold text-white">{selectedCard.expansion?.name || 'Set Base'}</p>
                                         </div>
 
-                                        <div className="p-3 bg-white bg-opacity-10 rounded my-4 shadow-sm" style={{ fontSize: '0.9rem', borderLeft: '4px solid #ffd700', maxHeight: '120px', overflowY: 'auto' }}>
+                                        <div className="p-3 bg-white bg-opacity-10 rounded my-4 shadow-sm text-start" style={{ fontSize: '0.9rem', borderLeft: '4px solid #ffd700', maxHeight: '120px', overflowY: 'auto' }}>
                                             <em>"{selectedCard.description || 'Questa carta non ha una descrizione Pokédex disponibile.'}"</em>
                                         </div>
 
-                                        <div className="h2 text-success fw-bold">€ {selectedCard.price}</div>
-
+                                        <div className="h2 text-success fw-bold text-start">€ {selectedCard.price}</div>
                                         <button className="btn-close btn-close-white position-absolute top-0 end-0 m-4 shadow-none" onClick={handleClose}></button>
                                     </div>
                                 </div>
