@@ -101,13 +101,13 @@ const GuestApp = () => {
             <div className="container py-5">
                 <header className="text-center mb-5">
                     <h1 className="fw-bold text-warning display-4" style={{ textShadow: '2px 2px #000' }}>POKÉMON GALLERY</h1>
-                    <input type="text" className="form-control bg-dark text-white border-warning rounded-pill w-50 mx-auto mt-4 shadow" placeholder="Cerca per iniziale (es. 'P')..." value={search} onChange={(e) => setSearch(e.target.value)} />
+                    <input type="text" className="form-control bg-dark text-white border-warning rounded-pill w-50 mx-auto mt-4 shadow search-input" placeholder="Cerca per iniziale (es. 'P')..." value={search} onChange={(e) => setSearch(e.target.value)} />
                 </header>
 
                 <div className="row g-4">
                     {filteredCards.map(card => (
                         <div key={card.id} className="col-md-4">
-                            <div className="p-4 h-100 shadow text-start" onClick={() => navigate(`/gallery/${getSlug(card)}`)}
+                            <div className="p-4 h-100 shadow text-start pokemon-card" onClick={() => navigate(`/gallery/${getSlug(card)}`)}
                                 style={{ background: 'linear-gradient(145deg, #ffd700, #e0c020)', borderRadius: '18px', border: '4px solid #333', cursor: 'pointer' }}>
                                 <div className="p-3 rounded mb-2" style={{ backgroundColor: '#1a1a1a' }}>
                                     <div className="d-flex justify-content-center text-white mb-2 px-1">
@@ -128,39 +128,67 @@ const GuestApp = () => {
                 </div>
 
                 {selectedCard && (
-                    <div className={`modal d-block ${isClosing ? 'fade-out' : 'fade-in'}`} style={{ background: 'rgba(0,0,0,0.95)', zIndex: 1050 }} onClick={handleClose}>
+                    <div className={`modal d-block ${isClosing ? 'fade-out' : 'fade-in'}`} style={{ background: 'rgba(0,0,0,0.92)', zIndex: 1050 }} onClick={handleClose}>
                         <div className="modal-dialog modal-lg modal-dialog-centered px-2" onClick={e => e.stopPropagation()}>
-                            <div className="modal-content bg-dark text-white border-warning" style={{ borderRadius: '25px', border: '2px solid' }}>
+                            <div className="modal-content bg-dark text-white border-warning shadow-lg position-relative" style={{ borderRadius: '25px', border: '2px solid', overflow: 'hidden' }}>
+
+                                {/* 1. FRECCE GRANDI: CAMBIO POKÉMON */}
+                                <button className="btn text-warning position-absolute start-0 h-100 px-3 fs-1 nav-side-btn" onClick={goToPrev}
+                                    style={{ zIndex: 1100, visibility: currentIndex > 0 ? 'visible' : 'hidden', background: 'linear-gradient(to right, rgba(0,0,0,0.5), transparent)', border: 'none', top: 0 }}>
+                                    ❮
+                                </button>
+                                <button className="btn text-warning position-absolute end-0 h-100 px-3 fs-1 nav-side-btn" onClick={goToNext}
+                                    style={{ zIndex: 1100, visibility: currentIndex < filteredCards.length - 1 ? 'visible' : 'hidden', background: 'linear-gradient(to left, rgba(0,0,0,0.5), transparent)', border: 'none', top: 0 }}>
+                                    ❯
+                                </button>
+
                                 <div className="row g-0">
-                                    <div className="col-md-6 bg-black d-flex align-items-center justify-content-center position-relative p-4 rounded-start" style={{ minHeight: '450px' }}>
-                                        <button className="btn text-warning position-absolute start-0 fs-1 z-3 px-3 h-100" onClick={goToPrev} style={{ visibility: currentIndex > 0 ? 'visible' : 'hidden' }}>‹</button>
-                                        <button className="btn text-warning position-absolute end-0 fs-1 z-3 px-3 h-100" onClick={goToNext} style={{ visibility: currentIndex < filteredCards.length - 1 ? 'visible' : 'hidden' }}>›</button>
+                                    {/* LATO SINISTRO: IMMAGINE */}
+                                    <div className="col-md-6 bg-black d-flex align-items-center justify-content-center position-relative p-4" style={{ minHeight: '450px' }}>
+
+                                        {/* WRAPPER IMMAGINE */}
+                                        <div className="position-relative d-inline-block">
+
+                                            {selectedCard.images.length > 1 && (
+                                                <>
+                                                    {/* FRECCE PICCOLE AGLI SPIGOLI IN BASSO */}
+                                                    <button className="btn btn-sm btn-light position-absolute rounded-circle shadow-sm opacity-75" onClick={prevImg}
+                                                        style={{ zIndex: 1120, width: '32px', height: '32px', left: '-16px', bottom: '0px', border: '1px solid #ccc' }}>
+                                                        ←
+                                                    </button>
+                                                    <button className="btn btn-sm btn-light position-absolute rounded-circle shadow-sm opacity-75" onClick={nextImg}
+                                                        style={{ zIndex: 1120, width: '32px', height: '32px', right: '-16px', bottom: '0px', border: '1px solid #ccc' }}>
+                                                        →
+                                                    </button>
+                                                </>
+                                            )}
+
+                                            <img src={`${baseUrl}/storage/${selectedCard.images[currentImgIndex]?.path}`} className="img-fluid"
+                                                style={{ maxHeight: '380px', filter: 'drop-shadow(0 0 12px gold)', position: 'relative', zIndex: 1 }} alt="" />
+                                        </div>
+
+                                        {/* DOTS IN BASSO AL CENTRO DELLA COLONNA */}
                                         {selectedCard.images.length > 1 && (
-                                            <>
-                                                <div className="position-absolute d-flex justify-content-between w-75 z-3" style={{ bottom: '15%' }}>
-                                                    <button className="btn btn-sm btn-light opacity-75 rounded-circle shadow" onClick={prevImg}>←</button>
-                                                    <button className="btn btn-sm btn-light opacity-75 rounded-circle shadow" onClick={nextImg}>→</button>
-                                                </div>
-                                                <div className="position-absolute bottom-0 mb-3 d-flex gap-2">
-                                                    {selectedCard.images.map((_, i) => (
-                                                        <div key={i} onClick={(e) => { e.stopPropagation(); setCurrentImgIndex(i); }}
-                                                            style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: currentImgIndex === i ? '#ffd700' : '#555', cursor: 'pointer' }} />
-                                                    ))}
-                                                </div>
-                                            </>
+                                            <div className="position-absolute bottom-0 mb-3 d-flex gap-2 z-3">
+                                                {selectedCard.images.map((_, i) => (
+                                                    <div key={i} onClick={(e) => { e.stopPropagation(); setCurrentImgIndex(i); }}
+                                                        style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: currentImgIndex === i ? '#ffd700' : '#555', cursor: 'pointer' }} />
+                                                ))}
+                                            </div>
                                         )}
-                                        <img src={`${baseUrl}/storage/${selectedCard.images[currentImgIndex]?.path}`} className="img-fluid" style={{ maxHeight: '380px', filter: 'drop-shadow(0 0 12px gold)' }} alt="" />
                                     </div>
-                                    <div className="col-md-6 p-4 p-md-5 position-relative text-start">
+
+                                    {/* LATO DESTRO: DETTAGLI */}
+                                    <div className="col-md-6 p-4 p-md-5 text-start position-relative">
                                         <h2 className="text-warning fw-bold mb-1">{selectedCard.name}</h2>
                                         {selectedCard.hp && <h5 className="text-danger fw-bold mb-3">HP {selectedCard.hp}</h5>}
                                         <div className="mb-4 d-flex gap-2"><span className="badge bg-secondary">{selectedCard.rarity}</span><span className="badge rounded-pill" style={getTypeStyle(selectedCard.type)}>{selectedCard.type}</span></div>
-                                        <div className="mb-3"><p className="mb-1 text-secondary small text-uppercase">Espansione</p><p className="fw-bold text-white">{selectedCard.expansion?.name || 'Set Base'}</p></div>
+                                        <div className="mb-3"><p className="mb-0 text-secondary small text-uppercase">Espansione / Set</p><p className="fw-bold text-white mb-0">{selectedCard.expansion?.name || 'Set Base'}</p></div>
                                         <div className="p-3 bg-white bg-opacity-10 rounded my-4 shadow-sm" style={{ fontSize: '0.9rem', borderLeft: '4px solid #ffd700', maxHeight: '120px', overflowY: 'auto' }}>
                                             <em>"{selectedCard.description || 'Nessuna descrizione disponibile.'}"</em>
                                         </div>
                                         <div className="h2 text-success fw-bold">€ {selectedCard.price}</div>
-                                        <button className="btn-close btn-close-white position-absolute top-0 end-0 m-4 shadow-none" onClick={handleClose}></button>
+                                        <button className="btn-close btn-close-white position-absolute top-0 end-0 m-4 shadow-none" style={{ zIndex: 1200 }} onClick={handleClose}></button>
                                     </div>
                                 </div>
                             </div>
