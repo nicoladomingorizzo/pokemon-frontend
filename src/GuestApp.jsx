@@ -101,8 +101,7 @@ const GuestApp = () => {
             <div className="container py-5">
                 <header className="text-center mb-5">
                     <h1 className="fw-bold text-warning display-4" style={{ textShadow: '2px 2px #000' }}>POKÉMON GALLERY</h1>
-                    <input type="text" className="form-control bg-dark text-white border-warning rounded-pill w-50 mx-auto mt-4 shadow"
-                        placeholder="Cerca per iniziale..." value={search} onChange={(e) => setSearch(e.target.value)} />
+                    <input type="text" className="form-control bg-dark text-white border-warning rounded-pill w-50 mx-auto mt-4 shadow" placeholder="Cerca per iniziale (es. 'P')..." value={search} onChange={(e) => setSearch(e.target.value)} />
                 </header>
 
                 <div className="row g-4">
@@ -111,7 +110,7 @@ const GuestApp = () => {
                             <div className="p-4 h-100 shadow text-start" onClick={() => navigate(`/gallery/${getSlug(card)}`)}
                                 style={{ background: 'linear-gradient(145deg, #ffd700, #e0c020)', borderRadius: '18px', border: '4px solid #333', cursor: 'pointer' }}>
                                 <div className="p-3 rounded mb-2" style={{ backgroundColor: '#1a1a1a' }}>
-                                    <div className="d-flex justify-content-between text-white mb-2 px-1">
+                                    <div className="d-flex justify-content-center text-white mb-2 px-1">
                                         <h5 className="fw-bold mb-0 text-truncate">{card.name}</h5>
                                     </div>
                                     <div style={{ height: '220px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

@@ -1,3 +1,22 @@
+/* Colore del placeholder per l'input di ricerca */
+.form-control::placeholder {
+    color: rgba(255, 255, 255, 0.7) !important;
+    /* Bianco semitrasparente */
+    opacity: 1;
+}
+
+/* Cambia il colore quando l'utente clicca sull'input */
+.form-control:focus::placeholder {
+    color: #ffc107 !important;
+    /* Giallo Pokémon quando clicchi*/
+}
+
+/* Se vuoi uno stile specifico solo per quell'input arrotondato */
+.rounded-pill::placeholder {
+    font-style: italic;
+    font-size: 0.9rem;
+}
+
 /* Stili per la griglia delle carte */
 .card-img-container {
     display: flex;
