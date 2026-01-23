@@ -132,7 +132,7 @@ const GuestApp = () => {
                         <div className="modal-dialog modal-lg modal-dialog-centered px-2" onClick={e => e.stopPropagation()}>
                             <div className="modal-content bg-dark text-white border-warning shadow-lg position-relative" style={{ borderRadius: '25px', border: '2px solid', overflow: 'hidden' }}>
 
-                                {/* 1. FRECCE GRANDI: CAMBIO POKÉMON */}
+                                {/* FRECCE GRANDI: CAMBIO POKÉMON */}
                                 <button className="btn text-warning position-absolute start-0 h-100 px-3 fs-1 nav-side-btn" onClick={goToPrev}
                                     style={{ zIndex: 1100, visibility: currentIndex > 0 ? 'visible' : 'hidden', background: 'linear-gradient(to right, rgba(0,0,0,0.5), transparent)', border: 'none', top: 0 }}>
                                     ❮
@@ -167,7 +167,6 @@ const GuestApp = () => {
                                                 style={{ maxHeight: '380px', filter: 'drop-shadow(0 0 12px gold)', position: 'relative', zIndex: 1 }} alt="" />
                                         </div>
 
-                                        {/* DOTS IN BASSO AL CENTRO DELLA COLONNA */}
                                         {selectedCard.images.length > 1 && (
                                             <div className="position-absolute bottom-0 mb-3 d-flex gap-2 z-3">
                                                 {selectedCard.images.map((_, i) => (
